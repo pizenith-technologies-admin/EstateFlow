@@ -1,0 +1,96 @@
+**REPLIT BUILD INSTRUCTION — BRANDING TAB (SCOPE-REDUCED)**
+*(Copy/paste into Replit AI. Extend only; no regressions.)*
+
+Implement a **minimal Branding** tab in **Agent Portal › Branding & Settings** with exactly **four fields** and a live preview. Remove/ignore any other branding inputs.
+
+---
+
+## Functional Scope (branding only)
+
+Fields (all required):
+
+1. **Agent Logo** – file upload (PNG/SVG; max 1MB; square ≥ 256px).
+2. **Agent Name** – text.
+3. **Agent Email** – email (RFC validation).
+4. **Brokerage Name** – text.
+
+Behavior:
+
+* Show a **live Client Header Preview** on the right rendering: `{Agent Logo} · {Agent Name} · {Brokerage Name}` and a “Contact: {Agent Email}” line.
+* **Save / Reset** buttons at the bottom; toast on success/failure.
+* Persist to DB; hydrate Client Portal header on load.
+
+---
+
+## UI Spec
+
+Route: `/agent/settings/branding`
+
+Layout:
+
+* Left: form card with 4 inputs, helper text, validation states.
+* Right: preview card (simulated client header).
+* Sticky footer with **Save** and **Reset**.
+
+Labels & help:
+
+* *Agent Logo* — “PNG/SVG, square, min 256px, max 1MB.”
+* *Agent Name* — “Shown in client portal header.”
+* *Agent Email* — “Used for ‘Contact Agent’ links.”
+* *Brokerage Name* — “Displayed beside your name.”
+
+State rules:
+
+* Disable **Save** until all fields pass validation.
+* **Reset** reverts to last-saved values.
+* On Save, refresh preview and push to client app context.
+
+---
+
+## Data Model
+
+Create/extend table `AgentBrandingSettings`:
+
+```ts
+id (pk)
+agentId (fk)
+logoUrl string NOT NULL
+agentName string NOT NULL
+agentEmail string NOT NULL
+brokerageName string NOT NULL
+updatedAt datetime
+updatedBy string
+```
+
+---
+
+## API
+
+* `GET /api/settings/branding` → returns `{ logoUrl, agentName, agentEmail, brokerageName }`
+* `PUT /api/settings/branding` (auth=agent)
+
+  * Validations: email format, strings length ≤ 120, file size/type check handled by upload service.
+* `POST /api/uploads/agent-logo` → returns `{ url }` (store; sanitize filename; return CDN path)
+
+All writes must log a settings version:
+
+* `SettingsVersion`: `{ id, agentId, tab:"branding", diff, updatedAt, updatedBy }`
+
+---
+
+## Client Portal Consumption
+
+* On client app bootstrap, fetch branding once and cache:
+
+  * Header shows: **Agent Logo** (left), **Agent Name** + **Brokerage Name** (inline), **Contact Agent** (mailto: **Agent Email**).
+* If branding missing, show safe defaults (“Your Agent”, “Your Brokerage”, generic avatar).
+
+---
+
+## Acceptance Criteria
+
+* Only the four fields exist on Branding tab; nothing else.
+* Live preview reflects edits instantly; Save persists and updates client header without page reload.
+* Client portal displays exactly: Logo, Agent Name, Brokerage Name, and Contact email link.
+* Validation, error states, and audit (settings version log) are implemented.
+* No regressions to other modules (dashboard, tours, reminders, docs, OREA 410).

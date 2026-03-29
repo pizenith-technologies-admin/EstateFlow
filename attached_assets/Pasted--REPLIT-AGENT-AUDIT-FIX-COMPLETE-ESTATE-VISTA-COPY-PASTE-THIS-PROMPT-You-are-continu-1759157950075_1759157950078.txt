@@ -1,0 +1,121 @@
+**REPLIT AGENT — AUDIT + FIX + COMPLETE “ESTATE VISTA” (COPY/PASTE THIS PROMPT)**
+
+You are continuing development on the **Estate Vista** web app. The project already has Agent and Client dashboards and a Rental Application (OREA 410). **Do not remove or regress anything.** Your mandate is to **audit**, **fix all errors**, **align the UI**, and **complete any missing functionality** across **both Agent and Client** experiences.
+
+---
+
+## 0) Operating Guardrails
+
+* Preserve the existing stack, folders, design system, and data. Extend only.
+* Enforce role-based access (Agent vs Client) across UI and API.
+* Maintain prior PII hardening (no SIN, bank numbers, DL in logs or API responses; sanitize nested objects).
+* Use CAD and metric (km); ISO-8601 dates.
+
+---
+
+## 1) Audit & Gap Analysis (both sides)
+
+1. Run the app, traverse **every screen and modal** shown in the screenshots:
+
+   * **Agent:** Dashboard, Pending Requests, My Properties, Route Planner, Edit Schedules, Tour Recap, Reminder Settings, Location Analytics, Add New Property, Quick Actions.
+   * **Client:** Viewing Journey (tiles), Upcoming Tours, Request Tour modal, Recent Properties, Group & Discussion, Quick Actions (Shortlist, Viewing History, **OREA Form 410**), Your Agent.
+2. Produce `/docs/GAP_REPORT.md` with three sections per feature:
+
+   * **Exists & OK**, **Exists but Broken/Partial**, **Missing**. Include reproducible steps and console/server errors.
+3. Fix **all console errors**, **TypeScript/typing issues**, **state timing bugs** (e.g., useEffect hydration for selectedProperty/user), **date parsing/serialization** (ISO ⇄ Date) across forms and API.
+4. Validate server enums and schemas (e.g., application status) and align frontend payloads.
+
+---
+
+## 2) Correctness Remediation (UI + logic)
+
+### Agent
+
+* **Dashboard KPIs:** Today’s Tours, Active Clients, Pending Requests, This Week (km). Add/verify **Time Invested (hh:mm)** and **Offers Pipeline**.
+* **Pending Requests:** ensure client tour requests surface with approve/reject (with reason), writing back to DB.
+* **My Properties:** ensure create/edit/delete flows work; address autocomplete via Google Places.
+* **Route Planner:** starting location input, **Optimize Route** (Google Directions). Show ordered stops, total **KM** and ETA; persist per-tour ordering.
+* **Edit Schedules:** edit/delete per showing; status chips (scheduled/confirmed).
+* **Tour Recap:** totals (km/duration), satisfaction (1–5), insights/challenges/opportunities/follow-ups/notes; persist to tour; include in reports.
+* **Reminder Settings:** **First Trip of Day** reminders; enable toggle; days/hours before; persist and surface to calendar integration.
+* **Location Analytics:** date range, Total Distance/Time, Properties Visited, Avg Speed; activity chart placeholders OK if no data.
+* **Quick Actions:** Manage Clients, Generate Reports, Personal Calendar, View Statistics—ensure they route and render.
+
+### Client
+
+* **Viewing Journey tiles:** Properties Seen, Rejected, Offers Made, km Traveled, Hours Invested—bind to real data.
+* **Upcoming Tours:** list tours; open itinerary; **Set First-Trip Reminder**; **Sync to Calendar**.
+* **Request New Tour modal:** preferred date/time, select one or more properties, notes → creates a **Pending Request** visible to Agent.
+* **Recent Properties:** card with photos, “Request Viewing”; ensure pagination.
+* **Group Discussion:** basic chat thread per group; tag property in message.
+* **Quick Actions:** Shortlist (liked/rejected/offer), Viewing History, **OREA Form 410**.
+
+---
+
+## 3) Must-Have Functional Completes (add if missing; finish if partial)
+
+* **Guided Intake (hard-gated & versioned)**
+
+  * **Buyer:** budget (CAD), areas, types, min beds/baths, parking/garage, mortgage pre-approval (amount/lender/expiry), timeline, preferences (commute/outdoor/main-floor washroom/max age/amenities), must-haves/deal-breakers.
+  * **Renter:** beds/baths, parking spots, occupants, monthly budget, areas/cities, types, move-in date, combined income, rent-in-advance months, must-haves/deal-breakers; document checklist (OREA 410, pay stubs, bank statements, Equifax, ID, PR/Work Permit/Visa, employment letter; student add-ons).
+  * **Seller:** address (autocomplete+pin), dwelling type, beds/baths/parking, size/year built, target list price & pricing flex, timeline to list & minimum carry, occupancy (owner/tenanted; N11/N9), showing windows/blackouts, media & staging consents, top 10 features, disclosures & warranties, offer strategy, lawyer contact; required docs (ID, title, utilities, tenancy, status certificate).
+  * **Statuses:** Draft → Submitted → Agent Validated → **Locked**; export **PDF**; immutable **Delta Log**.
+* **Requirements Hub (Agent > Client Profile):** header CTAs (Start Intake, Share Link, Validate & Lock, Request Docs, Sync to Tour Plan, Export PDF); show **Scope Fit** and **Exceptions Register**.
+* **Tours & Scheduling:** duplicate-prevention (radius/price/type vs Locked scope) with explain-why override; **Location Sharing** toggle day-of; **Walking Meter** between proximate stops; **Publish** issues **Showing Book** (PDF/link) and ICS invites.
+* **Documents Centre (both sides):** Offers Placed/Received, Representative Agreements, Client IDs, Rental Applications (OREA 410), Financials, Custom; upload/download; **Google Drive** integration per-agent with **per-client auto-provisioned folders**; “Open in Drive” deep link; client uploads land in correct folder.
+* **Reports:** **Tour Report** (post-tour), **Client History Ledger**, **Productivity Dashboard**, **Scope Fit Over Time** & **Exception Rate**; export PDF/CSV.
+* **Shortlist:** Liked / Rejected / Offer with notes; **Move to Tour Request**; **Start Offer** notifies Agent and opens doc checklist.
+* **MLS Lookup:** `MlsService` abstraction; if API not available, manual fallback when entering MLS#.
+
+---
+
+## 4) OREA Form 410 (stabilize end-to-end)
+
+* Re-verify: timing fixes (form hydration), server enums, **nested date** conversions, **POST/GET** response sanitization (remove SIN, account numbers, DL; also nested `financialInfo`), success states, and persistence.
+* Add **happy-path E2E test** and **schema unit tests** for all date fields.
+
+---
+
+## 5) Integration Hooks
+
+* **Google Maps:** address autocomplete, geocoding, routing, totals (km/time), **walking meter**.
+* **Calendar:** two-way blocks for tours + **first-trip reminders** (Agent & Client).
+* **Drive:** agent OAuth, per-client folder auto-creation; map uploads to correct folder.
+* **Notifications:** email/SMS/push; approval decisions, schedule changes, doc requests, reminders.
+
+---
+
+## 6) UI/UX Correction Pass
+
+* Normalize typography, spacing, iconography; align all cards to the screenshots.
+* Responsive layouts (mobile/tablet/desktop).
+* Accessibility: focus states, aria labels, keyboard navigation on modals.
+* Error states and toasts; disable buttons while submitting; optimistic updates only when safe.
+* Empty states exactly as shown (“No tours scheduled for today”, etc.).
+
+---
+
+## 7) Testing & Quality Gates
+
+* Add `/tests/e2e` scenarios for:
+
+  * Client **Request Tour** → Agent **Approve** → Tour appears in both dashboards.
+  * Route optimization computes totals; Edit Schedules updates persist.
+  * **First-Trip Reminder** creates calendar blocks for both roles.
+  * **Intake**: lock & export PDF; **Sync to Tour Plan** enforces scope; **Exceptions** captured.
+  * Documents: client upload → appears in Agent Drive folder; download bundle works.
+  * **OREA 410** submission & sanitized responses.
+* Add `/docs/TEST_PLAN.md` listing all scenarios and current status.
+* Fix **all** failing tests before completion.
+
+---
+
+## 8) Acceptance Criteria (definition of done)
+
+* No console/server errors; no PII leakage in logs/API (including nested).
+* All screens/modals from screenshots present and functional.
+* All features in Sections 2–6 implemented and wired.
+* Exports (Showing Book, Tour Report, Client History Ledger) generate PDFs/CSVs.
+* GAP_REPORT.md shows **0** remaining “Missing” and **0** “Broken/Partial”.
+
+**Execute now:** perform the audit, produce GAP_REPORT.md, remediate all errors and UI misalignments, complete missing functionality, add tests, and deliver a stable, production-ready web app per the above.

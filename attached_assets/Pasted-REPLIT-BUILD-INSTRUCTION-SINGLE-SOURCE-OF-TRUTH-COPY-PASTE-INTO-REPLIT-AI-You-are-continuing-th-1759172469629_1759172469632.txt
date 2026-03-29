@@ -1,0 +1,171 @@
+REPLIT BUILD INSTRUCTION — SINGLE SOURCE OF TRUTH (COPY/PASTE INTO REPLIT AI)
+You are continuing the build of Estate Vista (web-only for now). The repo already contains working Agent and Client dashboards and an OREA 410 rental application flow. Do not remove or regress any existing features or UI.
+Your mandate is to audit what’s implemented, keep it intact, and add everything missing from the full scope below. Where a feature already exists, harden, complete, and wire it end-to-end.
+________________________________________
+0) Operating Principles
+•	Preserve current stack, folders, styles, and components. Extend only.
+•	Role-based access: Agent vs Client (Buyer/Renter/Seller). Enforce RBAC on API + UI.
+•	Security/PII: Keep all prior sanitization (no SIN, bank numbers, DL in logs or API responses). Sanitize nested objects too.
+•	CA locale: currency in CAD, metric units (km), 24h/ISO dates.
+•	Web-first (responsive), no native apps.
+________________________________________
+1) Global UX & Navigation (use existing visuals from screenshots)
+•	Top App Bar (Agent): Global Search (Client / Property / MLS#), Quick Actions (Create Tour, Approve Requests, Request Docs, Start Intake), Profile menu (Branding, Integrations, Notifications).
+•	Left Nav (Agent): Dashboard · Clients · Tours & Scheduling · Documents · Reports · Media · Branding & Settings.
+•	Bottom Nav (Client): Home · Tours · Shortlist · Docs · Chat.
+________________________________________
+2) Agent Dashboard (landing)
+Keep and enhance KPI tiles:
+•	Today’s Tours, Active Clients, Pending Requests, This Week (km).
+•	Add: Time Invested (hh:mm), Offers Pipeline (Draft | Submitted | Accepted | Rejected), Scope Fit KPI (% of shown homes matching locked requirements).
+Primary buttons (as shown):
+•	Route Planner, Edit Schedules, Tour Recap, Reminder Settings, New Tour.
+Cards (as shown):
+•	Pending Requests (list pending client tour requests).
+•	My Properties (with Add Your First Property).
+•	Quick Actions: Manage Clients, Generate Reports, Personal Calendar, View Statistics.
+Accountability widgets (new):
+•	Exceptions Register (every time a shown property violates locked scope; reason required).
+•	Delta Log (audit trail of requirement changes).
+________________________________________
+3) Clients Module
+Client table with filters Buyer/Renter/Seller/Active/Past. Row actions: View Profile, Create Group, Send App Invite.
+Client Profile (tabbed):
+1.	Requirements (default tab — hard-gated, versioned)
+2.	Header CTAs: Start Intake (Buyer/Renter/Seller), Share Form Link (SMS/Email), Validate & Lock, Request Documents, Sync to Tour Plan, Export PDF.
+3.	Requirement Card fields: Status (Draft → Submitted → Validated → Locked), Owner, Last Updated.
+4.	Scope Summary: budget, areas (geofences), property types, min beds/baths, parking/garage, commute caps (mins/mode), must-haves, deal-breakers; renter/seller equivalents.
+5.	Scope Fit Score & Exceptions Register visible here.
+6.	Transparency Panel (read-only mirror of client view):
+7.	Properties Viewed | Rejected | Offers Made (and outcomes) | Property Ratings & Feedback (Star ratings + reasons) | Agent KM & Time.
+8.	History Ledger:
+9.	All tours, decisions, offers + rationale (chronological), including property ratings (1–5 stars) and feedback reasons for each visit.
+10.	Shortlists:
+11.	Liked | Rejected | Offer (bulk: Move to Tour, Export).
+12.	Offers:
+13.	Draft/Submitted/Countered/Accepted/Rejected (attach docs).
+14.	Documents (Permanent Centre): Folders
+15.	Offers Placed, Offers Received (Seller/Owner), Representative Agreements, Client IDs, Rental Applications (OREA 410), Financials (pay stubs, bank statements, employment letter, Equifax, PR/Work Permit/Visa), Custom.
+16.	Buttons: Upload, Request From Client (templated checklist + due dates + reminders), Download All, Open in Drive Folder (per-client).
+17.	Media:
+18.	Per-property gallery, Face-Blur, Annotate, Share to Group.
+19.	Notes:
+20.	Internal, @mentions.
+21.	Groups:
+22.	Create/join groups; invite links; member roles; group chat thread.
+________________________________________
+4) Tours & Scheduling
+Keep and complete these flows; use Google Maps:
+4.1 Create New Tour (Wizard)
+1.	Select Client/Group.
+2.	Add Properties:
+3.	Add by MLS# → attempt Realtor.ca/MLS API lookup (abstract behind service; if not available, manual entry modal).
+4.	Add Manually: address, link, list price, type, notes.
+5.	Duplicate-Prevention: rules for radius, price band, property type; warn/block on violation (ties to locked scope).
+6.	Optimize Route:
+7.	Auto sequence, drive times, Walking Meter for close hops, total KM & ETA; toggle Location Sharing for day-of.
+8.	Time Blocks:
+9.	Auto slotting + buffer; conflict detection.
+10.	First-Trip Reminder:
+11.	Set client reminder (X hours / specific time); block calendars (two-way Agent & Client via Google/Outlook).
+12.	Publish:
+13.	Send Showing Book (PDF/link), push itinerary to client, issue ICS invites.
+Per-tour actions: - Edit Tour (drag-drop + re-optimize), Send Itinerary, Start Live Tour (real-time location sharing; auto time/km logging; property check-ins), Generate Tour Report, Cancel/Reschedule, Duplicate-Check.
+4.2 Existing Modals (match screenshots)
+•	Tour Route Planner – [date]: Starting Location (autocomplete) + Optimize Route.
+•	Edit Showing Schedules – [date]: list of showings; edit/delete; status chips (scheduled/confirmed).
+•	Tour Recap: per-stop completion; then Recap form: Total Distance (km), Total Duration, Client Satisfaction (1–5), Key Insights, Challenges, Opportunities, Follow-ups, Overall Notes.
+•	Reminder Settings: Add First Trip of Day reminders; Enabled toggle; Days Before, Hours Before.
+•	Location Analytics & Movement Patterns: Date range → Total Distance, Total Time, Properties Visited, Avg Speed, Activity Breakdown chart, Recent Location History.
+•	Add New Property: Address (Google autocomplete), Bedrooms, Bathrooms, Price, Property Type (dropdown), Description.
+________________________________________
+5) Client Panel
+5.1 Home (Dashboard)
+•	Transparency Panel:
+•	Properties Viewed | Rejected | Offers Made (results) | Property Ratings (star ratings with feedback) | Agent KM & Time Invested.
+•	Tiles:
+•	Request Showing (enter MLS# for lookup or add manually with link/notes).
+•	Upcoming Tour (map + times) → Set First-Trip Reminder, Sync to Calendar.
+•	Location Sharing toggle (tour day).
+•	Complete Your Requirements (sticky): Start Buyer/Renter/Seller Intake, Save & Resume, Submit to Agent, Update After Submission (creates new version → agent validates).
+5.2 Tours (Upcoming | Past)
+•	Upcoming Tours:
+•	Card shows map, ordered stops, appointment times, total KM, total ETA, Walking Meter.
+•	Buttons: Open Itinerary, Set Reminder (First Trip), Sync to My Calendar, Share My Location, Download Showing Book.
+•	During Tour:
+•	Per property: Check-in, Take Photo/Video (auto-attach), Blur Faces, Add Note/Annotation, Rate (1–5 stars) with Feedback.
+o	After each property visit, client must rate the property on a 1–5 star scale.
+o	Feedback category (required drop-down): Offer Now (make an offer), Hold for Later (consider future offer), Reject (no offer).
+o	Reason (required drop-down) based on category selection. Example reasons (at least 10 provided for each category):
+o	Offer Now reasons (client is very interested, proceeding to offer): e.g. “Meets all needs”, “Great location”, “Ideal price”, “Excellent condition”, “Feature-rich kitchen”, “Large backyard”, “Great neighborhood”, “Close to work/school”, “Move-in ready”, “Good investment”.
+o	Hold for Later reasons (interested but delaying decision): e.g. “Check other options first”, “Want to negotiate price”, “Needs financing options”, “Need partner’s opinion”, “Save for backup”, “Seasonal preference”, “Want home inspection”, “Awaiting cashflow”, “Good but not urgent”, “Investigate seller terms”.
+o	Reject reasons (not interested at this time): e.g. “Over budget”, “Out of preferred area”, “Poor layout”, “Needs too much work”, “Too small”, “Missing must-have feature”, “Unfavorable commute”, “High fees/taxes”, “Bad timing”, “Other priority property”.
+o	Remind Me Later: Option to skip providing feedback immediately and create a follow-up task to remind the client to submit rating/feedback later.
+•	Past Tours:
+•	Tour Report (download), photos, decisions. Include client’s star ratings and reasons for each property from the tour.
+5.3 Shortlist
+•	Buckets: Liked | Rejected | Offer; show photo, price, address, reason tags.
+•	Actions: Move to Tour Request, Open Media & Notes, Start Offer Workflow (notifies agent; opens doc checklist).
+5.4 Docs (Permanent Centre)
+•	Folders (mirror Agent): My IDs, Applications (OREA 410 fillable), Financials (pay stubs, bank statements, employment letter, Equifax), Offers & Agreements, Other.
+•	Buttons: Upload (camera/files; multi-page scan), Download (single/all), View Requirements (Employed/Student checklists), Submit to Agent (push to secure per-client Google Drive folder).
+5.5 Chat (Group & Collaboration)
+•	Group threads per tour/group; Share Feedback (emoji + reasons: price/location/layout), Tag Property in chat, Create Poll (“Top pick?”).
+5.6 Guided Intake Forms (hard-gated)
+•	Buyer: Budget (CAD slider), Areas (chips + map), Property Types (multi), Min Beds/Baths, Parking/Garage, Mortgage Pre-Approval (Y/N; amount/lender/expiry), Timeline, Preferences (proximity/commute/outdoor/main-floor washroom/max age/amenities), Must-Haves/Deal-Breakers (tags), optional doc uploads (ID, pre-approval, proof of funds).
+•	Renter: Beds/Baths, Parking (spots), Occupants (adults/kids/pets), Monthly Budget (CAD), Areas/Cities, Property Types, Move-In Date, Combined Income (monthly/annual; mask), Rent in Advance (months), Must-Haves/Deal-Breakers (tags), OREA 410, pay stubs, bank statements, Equifax, ID, PR/Work Permit/Visa, employment letter; Student add-ons (admission, tuition proof).
+•	Seller: Address (autocomplete + pin), Dwelling Type, Beds/Baths/Parking, Size/Year Built, Target List Price & Pricing Flex, Timeline to List & Minimum Carry, Occupancy (owner/tenanted; N11/N9 status), Showing Windows & Blackouts, Media & Staging Consents (photo/video/3D/drone; staging + budget), Top 10 Features, Disclosures & Warranties, Offer Strategy (anytime/offer date/hold), Lawyer Contact, required docs (ID, title, utilities, tenancy, condo status certificate).
+•	Statuses: Draft → Submitted → Agent Validated → Locked.
+•	Post-submission cards: Scope Summary, Exceptions List (with reasons), Match Rate.
+•	Actions: Propose Change (Draft vX+1), Download PDF (timestamped).
+________________________________________
+6) Integrations & Systems
+•	Google Maps: address autocomplete, geocoding, routing; compute driving KM/time and Walking Meter between close stops.
+•	Calendar: Google/Outlook; create first-trip reminder + full tour blocks (Agent & Client).
+•	Google Drive: per-agent OAuth connect; auto-provision per-client folders; client uploads flow directly to the mapped folder; expose Open in Drive.
+•	MLS/Realtor.ca: create abstraction MlsService. If API credentials absent, provide manual fallback (enter MLS# → show capture modal).
+•	Notifications: email/SMS/push preferences with configurable cadences; fire on approvals, schedule changes, doc requests, reminders.
+•	Branding/White-Label: per-agent logo, name, address, contact; client-side branding reflects agent identity.
+________________________________________
+7) Outputs (exportables)
+•	Showing Book (Pre-Tour): property list, map, appointment times, total KM/ETA, walking segments, calendar links (printable/PDF + shareable link).
+•	Tour Report (Post-Tour): homes visited, media thumbnails, Like/Reject/Offer per stop, totals (time/km), recap fields (including client’s ratings and feedback).
+•	Client History Ledger: end-to-end archive of tours, decisions, offers with outcomes and reasons (including property ratings per visit).
+•	Exports: PDF/CSV for reports, ledger, and analytics.
+________________________________________
+8) Data, Validation, Privacy
+•	Schema: normalize clients, properties, tours, groups, reminders, offers, media, requirements (versioned), exceptions, ledger entries.
+•	Validation: ISO dates; enums for statuses; all CAD amounts numeric; geofences for areas.
+•	Versioning: immutable audit for requirement changes & exception logging.
+•	PII: never log or return sensitive fields; keep prior fixes for OREA 410; sanitize nested financial info; mask on UI when needed.
+•	Access: clients see only their data; agents see their book of business.
+________________________________________
+9) What Already Exists (KEEP) — Wire to the new system
+•	Agent Dashboard tiles & actions (as per screenshots).
+•	Client Dashboard with Viewing Journey, Upcoming Tours, Recent Properties, Group, Quick Actions (Shortlist, Viewing History, OREA Form 410), Your Agent (Call/Message).
+•	Modals: Request New Tour, Tour Route Planner, Edit Showing Schedules, Tour Recap, Reminder Settings, Location Analytics, Add New Property.
+•	OREA 410 Rental Application with server-side fixes (date handling, enum, nested date conversions) and sanitized API responses.
+Action: Connect these UIs to the full data model, validations, and exports. Fill any missing persistence or business rules.
+•	Client Rating & Feedback: (new) UI to record client’s 1–5 star rating and chosen reason after each property visit. Ensure this data flows to the client’s history and agent view.
+________________________________________
+10) Acceptance Criteria (done = true)
+•	All screens in screenshots are present, styled, and fully functional.
+•	Buyer/Renter/Seller intake → Validate & Lock → Sync to Tour Plan flows work and are versioned with PDFs.
+•	First Trip of Day reminder + two-way calendar blocks operate for both roles.
+•	Route optimization + Walking Meter + Location Sharing live during tour.
+•	Client Property Feedback: after each property visit, client can give a 1–5 star rating with required category and reason. Realtor can view full history of each client’s ratings and feedback.
+•	Duplicate-prevention enforces locked scope rules (radius/price/type) with exception capture.
+•	Permanent Document Centre exists on both sides with Drive sync and downloads.
+•	Showing Book, Tour Report, Client History Ledger export correctly.
+•	Security: no sensitive PII in logs or API responses (including nested objects).
+•	Branding: per-agent white-label reflected in client UI.
+•	No regression to existing OREA 410 workflow.
+________________________________________
+11) Deliverables
+•	Updated front-end and back-end code, migrations/seed where needed.
+•	Env hooks for Google APIs, Calendar, Drive, (optional) MLS.
+•	Readme updates for setup.
+•	Smoke tests for: intake lock, duplicate-prevention, reminder + calendar block, route planner totals, OREA 410 submission, document upload + Drive sync, exports.
+•	New tests for: client rating submission, feedback reasons capture, and visibility of ratings in agent/client views.
+Execute now: Audit current repo → map implemented vs missing → implement missing features per sections 2–11 → keep UI/labels exactly as in screenshots → do not delete existing code → ship a cohesive, production-grade web app matching this spec.
+________________________________________

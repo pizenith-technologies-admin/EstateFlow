@@ -1,0 +1,10 @@
+node_modules
+.expo
+dist
+.git
+.env
+.env.*
+!.env.example
+android
+ios
+**/.DS_Store

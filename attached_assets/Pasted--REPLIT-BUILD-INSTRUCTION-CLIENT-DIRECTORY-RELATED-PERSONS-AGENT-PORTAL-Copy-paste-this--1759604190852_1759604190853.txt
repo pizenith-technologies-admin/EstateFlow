@@ -1,0 +1,197 @@
+**REPLIT BUILD INSTRUCTION — CLIENT DIRECTORY & RELATED PERSONS (AGENT PORTAL)**
+*(Copy/paste this into Replit AI. Extend only; no regressions.)*
+
+You are adding a **Client Directory** with **Related Persons** (family/associates) that links to each primary client. The agent must see, in one click, the full household/org chart, contact methods, birthdays, app-usage status, and the client’s journey (current status + past status). Also add an **exportable contact list**.
+
+---
+
+## 0) Guardrails
+
+* Preserve existing “Clients” module and UI.
+* Role: **Agent-only** for manage; Client read-only where already exposed.
+* Locale: CAD, km, ISO/24h.
+* PII safe (no sensitive IDs in logs).
+
+---
+
+## 1) IA & Routing
+
+1. **Left Nav (Agent Portal):** add **“Directory”** under **Clients**.
+   Route: `/agent/directory`
+
+2. **Client Profile (Agent › Clients › Profile):** add a new tab **“Related Persons”**.
+   Route: `/agent/clients/:clientId/related`
+
+---
+
+## 2) UI — Directory (Index)
+
+**Header cards:**
+
+* Total Contacts | Households (primary clients) | Related Persons | Birthdays (next 30d)
+
+**Controls:**
+
+* Search bar (name, email, phone).
+* Filters: Type (Primary / Spouse/Partner / Parent / Child / Co-buyer / Guarantor / Roommate / Friend / Attorney / Mortgage Broker / Other), Has App (Yes/No), Last Active (Today/7/30/90d), Buyer/Renter/Seller.
+
+**Table columns:**
+
+* Name (avatar + role badge)
+* Primary Client (chip link)
+* Phone | Email
+* Birthday (DD-MMM)
+* Has App (✓/—)
+* Last Active (relative time)
+* Current Status (Active / Inactive)
+* Journey Snapshot (Tours | Offers | Rejected | KM | Hours)
+* Actions: **View**, **Call**, **Email**, **Message**, **Invite/Resend App**
+
+**Row click → Contact Drawer / Detail page** with full info + timeline.
+
+**Top-right:** **Add Contact** | **Export CSV**
+
+---
+
+## 3) UI — Client Profile › Related Persons (Tab)
+
+**Household Graph card:** primary client in center; related persons around; role badges.
+
+**Related Persons list (cards):**
+
+* Name, Role (select from taxonomy), Relationship note, Phone, Email, **DOB**, Has App, Last Active.
+* Quick Actions: **Call**, **Email**, **Message**, **Invite/Resend App**, **Set Birthday Reminder**.
+* **Link to Contact Detail**.
+
+**Buttons:**
+
+* **Add Related Person** (modal)
+* **Link Existing Contact** (search the Directory and attach)
+* **Export Household CSV**
+
+---
+
+## 4) Add / Edit Contact (Modal)
+
+Fields (all storable per contact):
+
+* **Full Name** (required)
+* **Role/Relationship** (required; enum)
+
+  * *Spouse/Partner, Parent, Child, Co-buyer, Guarantor, Roommate, Friend, Attorney, Mortgage Broker, Other*
+* **Primary Client** (search & assign; required)
+* **Phone** (multiple; label + number)
+* **Email** (multiple; label + email)
+* **Date of Birth** (date)
+* **Notes** (free text)
+* **Has App** (read-only flag; derived)
+* **Last Active** (read-only; derived)
+
+Actions: **Save**, **Cancel**. Validation on required fields and formats.
+
+---
+
+## 5) Contact Detail (Drawer/Page)
+
+**Header:** avatar, name, role chip, primary client chip.
+**Contact Methods:** call/email/message buttons.
+**Identity:** phone(s), email(s), DOB (with birthday badge if within 30 days), notes.
+**App Status:** Has App (✓/—), Last Active timestamp, **Invite/Resend**.
+**Journey Snapshot (read-only):** tours count, offers (draft/submitted/accepted/rejected), rejected count, KM, hours.
+**Activity Timeline:** linked events (joined household, tour attendance, ratings submitted, docs uploaded).
+**Actions:** **Edit**, **Remove Link** (keeps contact; unlinks from primary), **Delete Contact** (danger).
+
+---
+
+## 6) Birthday & Usage Automations
+
+* **Birthday Reminders:** toggle per contact; create agent task + optional email/SMS template (uses Communications settings).
+* **App Usage:** show “Has App” if they have a user account; **Last Active** from auth/activity logs.
+* **Directory Dashboard widget:** “Birthdays Next 30 Days” with quick actions (send greeting).
+
+---
+
+## 7) Data Model (add tables)
+
+```sql
+-- Contacts
+Contact (
+  id PK,
+  fullName TEXT NOT NULL,
+  dateOfBirth DATE NULL,
+  phones JSONB DEFAULT '[]',   -- [{label, number}]
+  emails JSONB DEFAULT '[]',   -- [{label, address}]
+  notes TEXT,
+  hasApp BOOLEAN DEFAULT FALSE,
+  lastActiveAt TIMESTAMP NULL,
+  createdAt TIMESTAMP,
+  updatedAt TIMESTAMP
+);
+
+-- Link a contact to a primary client with a role
+ClientContactLink (
+  id PK,
+  clientId FK REFERENCES Client(id),
+  contactId FK REFERENCES Contact(id),
+  relationshipType TEXT NOT NULL,  -- enum values listed above
+  isPrimary BOOLEAN DEFAULT FALSE, -- mark the main client’s own record if needed
+  createdAt TIMESTAMP,
+  updatedAt TIMESTAMP,
+  UNIQUE (clientId, contactId)
+);
+```
+
+> If a “Primary Client” should also live in `Contact`, create a shadow contact row flagged `isPrimary=true` and link it to itself for consistent querying.
+
+---
+
+## 8) API Endpoints
+
+* `GET   /api/directory/contacts?search=&type=&hasApp=&lastActive=`
+
+* `POST  /api/directory/contacts` (create)
+
+* `GET   /api/directory/contacts/:contactId`
+
+* `PUT   /api/directory/contacts/:contactId`
+
+* `DELETE/api/directory/contacts/:contactId`
+
+* `POST  /api/clients/:clientId/contacts/link`  *(body: contactId or full contact payload + relationshipType)*
+
+* `DELETE/api/clients/:clientId/contacts/:contactId` *(unlink)*
+
+* `GET   /api/directory/export.csv` *(filters applied)*
+
+* `POST  /api/directory/contacts/:contactId/invite` *(create login/invite if allowed)*
+
+* `POST  /api/directory/contacts/:contactId/birthday-reminder` *(toggle on/off)*
+
+All endpoints RBAC-protected (Agent). Sanitize responses (no sensitive PII).
+
+---
+
+## 9) Wiring to Existing Data
+
+* **Journey Snapshot** pulls from existing aggregates for that client; if the related person has participated in tours (attendance/ratings), include them in the contact timeline.
+* **Has App / Last Active** sourced from Users table (if email matches) or a `ContactUserLink` mapping if needed.
+
+---
+
+## 10) Export
+
+* CSV columns: `Full Name, Role, Primary Client, Phones, Emails, DOB, Has App, Last Active, Tours, OffersDraft, OffersSubmitted, OffersAccepted, OffersRejected, RejectedCount, KmTraveled, HoursInvested`.
+
+---
+
+## 11) Acceptance Criteria
+
+* **Directory** appears in left nav; searchable, filterable list; **Add Contact** and **Export CSV** work.
+* **Related Persons** tab exists on each **Client Profile**; can **Add**, **Link Existing**, **Edit**, **Unlink**, **Delete**.
+* One click from a client row opens **Household graph** and **Related Persons** list.
+* Each contact shows **Has App** and **Last Active**; **Invite/Resend** works.
+* **Birthdays next 30 days** widget and per-contact **Birthday Reminder** toggle are operational.
+* **Journey Snapshot** and timeline display correctly.
+* No regressions to Clients, Tours, Docs, Reports, or existing security controls.
+
+> **Execute now:** Scaffold the Directory route, Related Persons tab, modals, server models, and endpoints as above; hydrate UI with live data; ensure CSV export and automations (birthday reminders, invites) are functional.

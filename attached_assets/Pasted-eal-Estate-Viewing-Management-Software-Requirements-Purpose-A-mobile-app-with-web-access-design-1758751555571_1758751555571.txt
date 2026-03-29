@@ -1,0 +1,91 @@
+eal Estate Viewing Management Software — Requirements
+
+Purpose
+A mobile app (with web access) designed to support real estate agents and their clients in organizing, booking, and tracking property viewings. Built primarily for mobile use so that everything can be accessed easily in hand, it ensures convenience, speed, and on-the-go collaboration. The system will provide login-based access for both agents and clients, collaborative tools, tour scheduling, mileage/time tracking, and a complete decision history.
+
+---
+
+Core Features
+
+1. Client & Group Access
+
+•⁠  ⁠Clients can log in to the system through the agent’s portal.
+•⁠  ⁠Clients can create or join groups (e.g., family, partners) for easy collaboration.
+•⁠  ⁠Group members can share feedback, photos, and decisions in real time.
+
+2. Showing Requests & Scheduling
+
+•⁠  ⁠Clients can request showings by submitting properties they want to visit.
+•⁠  ⁠Requests go to the agent for approval/confirmation.
+•⁠  ⁠Agent creates a showing schedule (itinerary) and sends it back to clients.
+•⁠  ⁠The schedule shows:
+
+  * List of properties.
+  * Appointment times.
+  * Total travel distance (km).
+  * Estimated time investment.
+
+3. Tracking & Reporting
+
+•⁠  ⁠For each showing, the system automatically records:
+
+  * How many homes were visited.
+  * Total distance traveled (km).
+  * Total time invested.
+  * Property status: Viewed / Rejected / Liked / Offer made.
+  * Reasons for rejection (e.g., price, location, layout).
+•⁠  ⁠Creates a complete historical log of each client’s journey:
+
+  * All homes visited.
+  * Decisions taken.
+  * Offers made (and why accepted or rejected).
+•⁠  ⁠Client Transparency Panel (Top of Dashboard):
+
+  * Number of properties seen to date.
+  * Number of properties rejected.
+  * Number of offers placed (and their outcomes).
+  * Total km traveled and total time invested by agent.
+  * This ensures clients clearly see the effort and time invested, creating accountability and discouraging wasted showings.
+
+4. Photo & Media Management
+
+•⁠  ⁠Agent and clients can take photos during viewings.
+•⁠  ⁠Photos are automatically attached to the corresponding property record.
+•⁠  ⁠Optional: Clients can add short video clips or annotations to their viewing notes.
+•⁠  ⁠Privacy features: ability to blur occupant faces in photos.
+
+---
+
+User Interfaces
+
+Agent Interface
+
+•⁠  ⁠Dashboard showing upcoming tours, pending client requests, travel/time statistics.
+•⁠  ⁠Ability to build and edit showing schedules.
+•⁠  ⁠Tour recap reports (homes shown, km traveled, time spent, decisions made).
+•⁠  ⁠Lifetime history per client (property visits, offers, rejections).
+•⁠  ⁠Duplicate-prevention settings (radius, price band, property type rules).
+
+Client Interface
+
+•⁠  ⁠Login portal with personalized dashboard.
+•⁠  ⁠Transparency Panel at the top showing:
+
+  * Total properties viewed.
+  * Total rejected.
+  * Offers made.
+  * Km traveled and time invested by agent.
+•⁠  ⁠Ability to request new showings, see approved schedules.
+•⁠  ⁠Tour overview with maps, property list, travel estimates.
+•⁠  ⁠Group chat and collaboration area.
+•⁠  ⁠Shortlist management (Liked, Rejected, Offer).
+•⁠  ⁠Photo & video upload during viewings.
+•⁠  ⁠Access to personal viewing history and decisions.
+
+---
+
+Outputs
+
+•⁠  ⁠Showing Book (before tour): Printable or digital itinerary with property list, map, timing, travel estimates.
+•⁠  ⁠Tour Report (after tour): Summary of homes visited, decisions made, photos taken, travel/time totals.
+•⁠  ⁠Client History Ledger: Complete archive of all tours, decisions, and offers for that client.
