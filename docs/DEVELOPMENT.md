@@ -52,7 +52,7 @@ Visit `http://localhost:5000` — the React frontend and API are served together
 ```bash
 # Root (server + web)
 npm run dev          # Start development server with hot reload (port 5000)
-npm run build        # Build for production (Replit/self-hosted)
+npm run build        # Build for production (self-hosted / Docker)
 npm run build:vercel # Build for Vercel deployment
 npm start            # Run production build
 npm run check        # TypeScript type check
@@ -80,7 +80,7 @@ server/
 ├── db.ts            # Neon pool + Drizzle instance
 ├── cloudinary.ts    # Image upload service
 ├── emailService.ts  # SendGrid email templates
-├── objectStorage.ts # Google Cloud Storage (with Replit fallback)
+├── objectStorage.ts # Google Cloud Storage
 ├── objectAcl.ts     # GCS object access control
 ├── seedData.ts      # Sample data for development
 └── vite.ts          # Vite dev server integration (dev only)

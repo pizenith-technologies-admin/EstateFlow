@@ -1,0 +1,20 @@
+# Mobile app as static web only (Expo export + nginx).
+# Use this when the API runs elsewhere (another machine, staging, production).
+# The API URL is baked in at build time — set EXPO_PUBLIC_API_URL to a base the *browser* can reach.
+#
+# Examples:
+#   docker compose -f docker-compose.mobile-web.yml up --build
+#   EXPO_PUBLIC_API_URL=https://api.example.com docker compose -f docker-compose.mobile-web.yml up --build
+#
+# Open: http://localhost:8080
+
+services:
+  mobile-web:
+    build:
+      context: ./mobile
+      dockerfile: Dockerfile
+      args:
+        EXPO_PUBLIC_API_URL: ${EXPO_PUBLIC_API_URL:-http://localhost:5000}
+    container_name: estateflow-mobile-web
+    ports:
+      - "8080:80"

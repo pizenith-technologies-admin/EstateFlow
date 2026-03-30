@@ -11,6 +11,13 @@ if (sendgridApiKey) {
   mailService.setApiKey(sendgridApiKey);
 }
 
+/** Login link base for client-facing emails (welcome, etc.) */
+function publicWebAppUrl(): string {
+  const u = process.env.PUBLIC_APP_URL?.trim();
+  if (u) return u.replace(/\/$/, "");
+  return "http://localhost:5000";
+}
+
 interface EmailParams {
   to: string;
   from: string;
@@ -231,7 +238,7 @@ Here are your login credentials:
 Email: ${data.email}
 Password: ${data.password}
 
-You can now log in to Estate Vista at https://estate-vista.replit.dev to:
+You can now log in to Estate Vista at ${publicWebAppUrl()} to:
 - View properties your agent is showing you
 - Rate and provide feedback on properties
 - Access documents and important information

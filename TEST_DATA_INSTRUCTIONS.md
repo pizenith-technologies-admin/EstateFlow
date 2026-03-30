@@ -18,11 +18,9 @@ This script adds sample tour and rating data to test the agent portal's client h
 psql $DATABASE_URL < add_test_data.sql
 ```
 
-### Option 2: Using the Replit database tool
-1. Go to the Database tab in Replit
-2. Open the SQL console
-3. Copy and paste the contents of `add_test_data.sql`
-4. Execute the queries
+### Option 2: Using a SQL client (pgAdmin, DBeaver, etc.)
+1. Connect with your `DATABASE_URL`
+2. Run the contents of `add_test_data.sql`
 
 ## After adding the data:
 1. Log in as agent (user ID: 47231990)

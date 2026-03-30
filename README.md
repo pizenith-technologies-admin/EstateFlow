@@ -28,9 +28,13 @@ EstateFlow/
 │   ├── cloudinary.ts # Image upload service
 │   ├── emailService.ts # SendGrid integration
 │   └── objectStorage.ts # Google Cloud Storage
+├── docs/
+│   └── images/        # Screenshots & legacy attached PNGs (not shipped in Docker)
 ├── shared/
 │   └── schema.ts     # Drizzle ORM schema + Zod types (shared by server & mobile)
 ├── api/_handler.ts   # Vercel handler source (bundled → api/index.js)
+├── docker-compose.yml              # Postgres + migrate + backend
+├── docker-compose.mobile-web.yml   # Expo web UI only (optional API URL)
 ├── vercel.json       # Vercel deployment config
 └── drizzle.config.ts # Database migration config
 ```
@@ -53,6 +57,51 @@ npm run dev
 ```
 
 See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for full local setup instructions.
+
+## Run with Docker
+
+### Backend + database (default `docker-compose.yml`)
+
+Starts **PostgreSQL**, runs **migrate** (`drizzle-kit push` once), then the **production API** and static **client/** landing page.
+
+```bash
+docker compose up --build
+```
+
+| URL | What |
+|-----|------|
+| http://localhost:5000 | API + marketing/landing UI (`client/`) |
+
+Set strong secrets via environment or a `.env` next to the compose file:
+
+- `JWT_SECRET`
+- `SESSION_SECRET`
+
+```bash
+docker compose down          # stop
+docker compose down -v       # stop and delete Postgres volume
+```
+
+### Mobile web only (`docker-compose.mobile-web.yml`)
+
+Use this when the API runs **somewhere else** (remote server, staging, or another Docker host). The Expo web bundle is built with **`EXPO_PUBLIC_API_URL`** embedded — it must be a URL your **browser** can call (HTTPS for remote APIs).
+
+```bash
+# Talk to API on your machine (same host as Docker)
+docker compose -f docker-compose.mobile-web.yml up --build
+
+# Talk to a remote API (rebuild when you change the URL)
+EXPO_PUBLIC_API_URL=https://your-api.example.com docker compose -f docker-compose.mobile-web.yml up --build
+```
+
+Open **http://localhost:8080** (static Expo web export behind nginx — not Metro/Expo Go).
+
+You can run **only** `docker-compose.mobile-web.yml` locally while the stack from `docker-compose.yml` runs on a server, as long as that API allows CORS from `http://localhost:8080` (see **`ALLOWED_ORIGINS`** / production CORS in `server/app.ts`).
+
+To test against the production Vercel API:
+```
+# mobile/.env
+EXPO_PUBLIC_API_URL=https://estate-flow-deployment.vercel.app
 
 ## Documentation
 

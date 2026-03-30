@@ -10,44 +10,38 @@ import {
   setObjectAclPolicy,
 } from "./objectAcl";
 
-const REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
+let gcsClient: Storage | null = null;
 
-function createStorageClient(): Storage {
-  // Outside Replit: use a service account key stored as a base64-encoded env var.
-  // To generate: base64-encode your GCP service account JSON key file and set
-  // GOOGLE_CLOUD_KEY_BASE64 in your environment (e.g. Vercel project settings).
-  if (process.env.GOOGLE_CLOUD_KEY_BASE64) {
-    const credentials = JSON.parse(
-      Buffer.from(process.env.GOOGLE_CLOUD_KEY_BASE64, "base64").toString("utf-8")
+/**
+ * Google Cloud Storage client (service account via GOOGLE_CLOUD_KEY_BASE64).
+ * Lazily created on first use so the app can boot when GCS is unused.
+ */
+export function getObjectStorageClient(): Storage {
+  if (gcsClient) return gcsClient;
+  const b64 = process.env.GOOGLE_CLOUD_KEY_BASE64;
+  if (!b64) {
+    throw new Error(
+      "Google Cloud Storage is not configured. Set GOOGLE_CLOUD_KEY_BASE64 (base64-encoded service account JSON) and GOOGLE_CLOUD_PROJECT_ID.",
     );
-    return new Storage({
-      credentials,
-      projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
-    });
   }
-
-  // On Replit: use the managed sidecar token service.
-  return new Storage({
-    credentials: {
-      audience: "replit",
-      subject_token_type: "access_token",
-      token_url: `${REPLIT_SIDECAR_ENDPOINT}/token`,
-      type: "external_account",
-      credential_source: {
-        url: `${REPLIT_SIDECAR_ENDPOINT}/credential`,
-        format: {
-          type: "json",
-          subject_token_field_name: "access_token",
-        },
-      },
-      universe_domain: "googleapis.com",
-    },
-    projectId: "",
+  const credentials = JSON.parse(
+    Buffer.from(b64, "base64").toString("utf-8"),
+  );
+  gcsClient = new Storage({
+    credentials,
+    projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
   });
+  return gcsClient;
 }
 
-// The object storage client is used to interact with the object storage service.
-export const objectStorageClient = createStorageClient();
+/** @deprecated Prefer getObjectStorageClient(); kept for bundle compatibility */
+export const objectStorageClient = new Proxy({} as Storage, {
+  get(_target, prop, _receiver) {
+    const client = getObjectStorageClient();
+    const value = Reflect.get(client, prop, client);
+    return typeof value === "function" ? (value as Function).bind(client) : value;
+  },
+});
 
 export class ObjectNotFoundError extends Error {
   constructor() {
@@ -66,8 +60,7 @@ export class ObjectStorageService {
     const dir = process.env.PRIVATE_OBJECT_DIR || "";
     if (!dir) {
       throw new Error(
-        "PRIVATE_OBJECT_DIR not set. Create a bucket in 'Object Storage' " +
-          "tool and set PRIVATE_OBJECT_DIR env var."
+        "PRIVATE_OBJECT_DIR not set. Set it to your GCS bucket path (e.g. /my-bucket/objects).",
       );
     }
     return dir;
@@ -114,8 +107,7 @@ export class ObjectStorageService {
     const privateObjectDir = this.getPrivateObjectDir();
     if (!privateObjectDir) {
       throw new Error(
-        "PRIVATE_OBJECT_DIR not set. Create a bucket in 'Object Storage' " +
-          "tool and set PRIVATE_OBJECT_DIR env var."
+        "PRIVATE_OBJECT_DIR not set. Set it to your GCS bucket path (e.g. /my-bucket/objects).",
       );
     }
 
@@ -151,7 +143,7 @@ export class ObjectStorageService {
     }
     const objectEntityPath = `${entityDir}${entityId}`;
     const { bucketName, objectName } = parseObjectPath(objectEntityPath);
-    const bucket = objectStorageClient.bucket(bucketName);
+    const bucket = getObjectStorageClient().bucket(bucketName);
     const objectFile = bucket.file(objectName);
     const [exists] = await objectFile.exists();
     if (!exists) {
@@ -255,42 +247,12 @@ async function signObjectURL({
   method: "GET" | "PUT" | "DELETE" | "HEAD";
   ttlSec: number;
 }): Promise<string> {
-  // Outside Replit: use the GCS SDK's native signed URL generation.
-  if (process.env.GOOGLE_CLOUD_KEY_BASE64) {
-    const bucket = objectStorageClient.bucket(bucketName);
-    const file = bucket.file(objectName);
-    const [signedUrl] = await file.getSignedUrl({
-      version: "v4",
-      action: method.toLowerCase() as "read" | "write" | "delete",
-      expires: Date.now() + ttlSec * 1000,
-    });
-    return signedUrl;
-  }
-
-  // On Replit: use the managed sidecar signing service.
-  const request = {
-    bucket_name: bucketName,
-    object_name: objectName,
-    method,
-    expires_at: new Date(Date.now() + ttlSec * 1000).toISOString(),
-  };
-  const response = await fetch(
-    `${REPLIT_SIDECAR_ENDPOINT}/object-storage/signed-object-url`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(request),
-    }
-  );
-  if (!response.ok) {
-    throw new Error(
-      `Failed to sign object URL, errorcode: ${response.status}, ` +
-        `make sure you're running on Replit`
-    );
-  }
-
-  const { signed_url: signedURL } = await response.json();
-  return signedURL;
+  const bucket = getObjectStorageClient().bucket(bucketName);
+  const file = bucket.file(objectName);
+  const [signedUrl] = await file.getSignedUrl({
+    version: "v4",
+    action: method.toLowerCase() as "read" | "write" | "delete",
+    expires: Date.now() + ttlSec * 1000,
+  });
+  return signedUrl;
 }

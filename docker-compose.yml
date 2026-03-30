@@ -1,9 +1,11 @@
-# EstateFlow: Postgres + API (Express + Vite landing) + Mobile app as static web (Expo export).
+# EstateFlow: Postgres + API (Express + Vite landing).
 #
 # Usage:
 #   docker compose up --build
-#   API + landing:  http://localhost:5000
-#   Mobile (web UI): http://localhost:8080  (calls API at EXPO_PUBLIC_API_URL, default host localhost:5000)
+#   API + landing: http://localhost:5000
+#
+# For the mobile app as web UI (pointing at this API or any other URL), use:
+#   docker compose -f docker-compose.mobile-web.yml up --build
 #
 # Set JWT_SECRET / SESSION_SECRET in a .env file next to this compose file for real use.
 
@@ -55,19 +57,6 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
-
-  mobile-web:
-    build:
-      context: ./mobile
-      dockerfile: Dockerfile
-      args:
-        # Browser on your machine must reach the API; host port is 5000.
-        EXPO_PUBLIC_API_URL: ${EXPO_PUBLIC_API_URL:-http://localhost:5000}
-    container_name: estateflow-mobile-web
-    ports:
-      - "8080:80"
-    depends_on:
-      - backend
 
 volumes:
   estateflow_pgdata:

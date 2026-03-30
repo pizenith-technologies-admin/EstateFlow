@@ -11,7 +11,7 @@ mobile/dist
 **/.DS_Store
 .cursor
 .local
-attached_assets
+docs/images
 *.md
 !README.md
 coverage
