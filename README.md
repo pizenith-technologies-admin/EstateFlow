@@ -103,6 +103,23 @@ To test against the production Vercel API:
 # mobile/.env
 EXPO_PUBLIC_API_URL=https://estate-flow-deployment.vercel.app
 
+On Andriod Install - 
+ Expo GO 
+
+On Apple Install - 
+ Camera app
+
+Under Mobile folder create an .env file and add below - 
+ EXPO_PUBLIC_API_URL=https://estate-flow-deployment.vercel.app
+
+Then from mobile folder run the below - 
+~/Downloads/EstateFlow_Deployment-main/mobile$ 
+
+```
+npx expo start
+
+
+
 ## Documentation
 
 | Document | Description |
